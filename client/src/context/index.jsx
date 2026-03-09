@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { GetParams } from '../utils/onboard.js';
 import { ABI, ADDRESS } from '../contract';
+import { ABI, ADDRESS, COMBINDER_REACTOR_ADDRESS, CombinderAbi } from '../contract';
 import { createEventListeners } from './createEventListeners';
 
 const GlobalContext = createContext();
@@ -144,6 +145,65 @@ export const GlobalContextProvider = ({ children }) => {
       }
     }
   }, [errorMessage]);
+
+  useEffect(() => {
+    let interval;
+  
+    const sendActivityHeartbeat = async () => {
+      if (gameData.activeBattle && provider && walletAddress) {
+        try {
+          const signer = provider.getSigner();
+          const reactorContract = new ethers.Contract(
+            COMBINDER_REACTOR_ADDRESS,
+            CombinderAbi,
+            signer,
+          );
+  
+          // 1. PRE-FLIGHT CHECK: Estimate gas to see if the transaction WILL fail
+          // This stops the "Unpredictable Gas Limit" error from popping up in the UI
+          await reactorContract.estimateGas.recordActivity(
+            walletAddress,
+            30,
+            ethers.utils.formatBytes32String('gaming_session'),
+          );
+  
+          console.log('Sending heartbeat to Combinder...');
+  
+          // 2. ACTUAL TRANSACTION: Only runs if estimateGas succeeds
+          const tx = await reactorContract.recordActivity(
+            walletAddress,
+            30,
+            ethers.utils.formatBytes32String('gaming_session'),
+          );
+  
+          setShowAlert({
+            status: true,
+            type: 'info',
+            message: 'Eco-Pulse: 30 SPARCs earned for green gaming!',
+          });
+  
+          await tx.wait();
+          console.log('Heartbeat confirmed on-chain:', tx.hash);
+        } catch (error) {
+          // 3. GRACEFUL ERROR HANDLING
+          if (error.message.includes('execution reverted') || error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+            console.warn('Combinder Heartbeat skipped: Missing GAME_ROLE on contract.');
+          } else {
+            console.error('Combinder Heartbeat failed:', error);
+          }
+        }
+      }
+    };
+  
+    if (gameData.activeBattle) {
+      // simulative pulse, 2 minutes
+      interval = setInterval(sendActivityHeartbeat, 120000);
+    }
+  
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [gameData.activeBattle, provider, walletAddress]);
 
   return (
     <GlobalContext.Provider
