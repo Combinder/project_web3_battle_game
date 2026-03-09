@@ -4,7 +4,6 @@ import Web3Modal from 'web3modal';
 import { useNavigate } from 'react-router-dom';
 
 import { GetParams } from '../utils/onboard.js';
-import { ABI, ADDRESS } from '../contract';
 import { ABI, ADDRESS, COMBINDER_REACTOR_ADDRESS, CombinderAbi } from '../contract';
 import { createEventListeners } from './createEventListeners';
 
