@@ -1,5 +1,9 @@
 This is A demonstrative project forked from the original account [here](https://github.com/Combinder/project_web3_battle_game)
 
+A deployed version of the sample game can be found [here](https://project-web3-battle-game-imjc42ee9-alweezys-projects.vercel.app/)
+
+> You might need to submit your wallet address for verification to be granted a GAME_ROLE please reach out to shahryar@combinder.io, alternatively deploy the combinder smart contract.
+
 > It's purely for demostrative purposes on the use of our Green energy infrastructure for Game development.
 
 # Avax Gods - Online Multiplayer Web3 NFT Card Game
